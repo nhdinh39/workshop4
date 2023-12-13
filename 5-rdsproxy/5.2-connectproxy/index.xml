@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Connect RDS Proxy on RDS Proxy for PostgreSQL</title>
+    <link>/5-rdsproxy/5.2-connectproxy/</link>
+    <description>Recent content in Connect RDS Proxy on RDS Proxy for PostgreSQL</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language><atom:link href="/5-rdsproxy/5.2-connectproxy/index.xml" rel="self" type="application/rss+xml" />
+  </channel>
+</rss>
