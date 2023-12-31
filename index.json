@@ -1,0 +1,197 @@
+[
+{
+	"uri": "/4-roleforproxy/4.1-createpolicy/",
+	"title": "Create Policy",
+	"tags": [],
+	"description": "",
+	"content": "Execution sequence Return to the MobaXterm window Get Secret ARN information of secretPostgresqlUser in AWS Secrets Manager. Save this information. aws secretsmanager describe-secret --secret-id secretPostgresqlUser --region ap-southeast-1 --query \u0026#34;ARN\u0026#34; --output text Get Key ARN information of aws/secretsmanager in AWS KMS. This key is the default key we chose to Encrypt Secret in chapter 3. Save this information. aws kms describe-key --key-id alias/aws/secretsmanager --query \u0026#34;KeyMetadata.Arn\u0026#34; --output text Access IAM Console Select Policies Select Create policy Select JSON Copy and paste the following JSON code to define permissions for the Policy Replace \u0026lt;CHANGE_YOUR_SECRET_ARN_HERE\u0026gt; with Secret ARN in the step above Replace \u0026lt;CHANGE_YOUR_KEY_ARN_HERE\u0026gt; with Key ARN in the step above Select Next {\r\u0026#34;Version\u0026#34;: \u0026#34;2012-10-17\u0026#34;,\r\u0026#34;Statement\u0026#34;: [\r{\r\u0026#34;Sid\u0026#34;: \u0026#34;VisualEditor0\u0026#34;,\r\u0026#34;Effect\u0026#34;: \u0026#34;Allow\u0026#34;,\r\u0026#34;Action\u0026#34;: \u0026#34;secretsmanager:GetSecretValue\u0026#34;,\r\u0026#34;Resource\u0026#34;: \u0026#34;\u0026lt;CHANGE_YOUR_SECRET_ARN_HERE\u0026gt;\u0026#34;\r},\r{\r\u0026#34;Sid\u0026#34;: \u0026#34;VisualEditor1\u0026#34;,\r\u0026#34;Effect\u0026#34;: \u0026#34;Allow\u0026#34;,\r\u0026#34;Action\u0026#34;: \u0026#34;kms:Decrypt\u0026#34;,\r\u0026#34;Resource\u0026#34;: \u0026#34;\u0026lt;CHANGE_YOUR_KEY_ARN_HERE\u0026gt;\u0026#34;,\r\u0026#34;Condition\u0026#34;: {\r\u0026#34;StringEquals\u0026#34;: {\r\u0026#34;kms:ViaService\u0026#34;: \u0026#34;secretsmanager.ap-southeast-1.amazonaws.com\u0026#34;\r}\r}\r}\r]\r} In the Policy name field, enter FCJ-Proxy-Policy Select Create Policy Permissions granted to policy FCJ-Proxy-Policy\n+Allowed GetSecretValue for secretPostgresqlUser stored in AWS Secrets Manager\n+Allow the AWS Secrets Manager service to use aws/secretsmanager to perform Decrypt operations\n"
+},
+{
+	"uri": "/2-rdspostgresql/2.1-createpostgres/",
+	"title": "Create RDS PostgreSQL",
+	"tags": [],
+	"description": "",
+	"content": "Execution sequence Access RDS Console Select Databases Select Create database At the Create database page In the Choose a database creation method section In the Choose a database creation method field, select Standard create In the Engine options section In the Engine type field, select PostgreSQL In the Engine Version field, select PostgreSQL 14.9-R2 In the Templates section Select Dev/Test In the Availability and durability section Select Multi-AZ DB instance In the Settings section In the DB cluster identifier field, enter postgresql In the Master username field, enter postgres In the Master password field, enter postgres In the Confirm master password field, enter postgres In the Instance configuration section Select Burstable classes (includes t classes), then select db.t3.medium In the Connectivity section In the Compute resource field, select Don\u0026rsquo;t connect to an EC2 compute resource In the Virtual private cloud (VPC) field, select FCJ-vpc In the DB subnet group field, select Create new DB Subnet Group In the VPC security group (firewall) field, select Choose existing, then select DB-Security-Group Scroll down to the bottom, select Create database, the DB creation process begins At Databases page Wait until Status of postgresql changes to Available Select postgresql Save the DB Endpoint value to prepare for the next step "
+},
+{
+	"uri": "/5-rdsproxy/5.1-createproxy/",
+	"title": "Create RDS Proxy",
+	"tags": [],
+	"description": "",
+	"content": "Execution sequence Access RDS Console Select Proxies Select Create proxy At the Create proxy page In the Proxy configuration section In the Engine family field, select PostgreSQL In the Proxy identifier field, enter rds-proxy In the Target group configuration section In the Database field, select postgresql In the Authentication section In the Identity and access management (IAM) role field, select FCJ-Proxy-Role In the Secrets Manager secrets field, select secretPostgresqlUser In the Connectivity section, select Additional connectivity configuration In the VPC security group field, select Choose existing In the Existing VPC security groups field, select DB-Security-Group Scroll to the bottom, select Create proxy At Proxies page Wait until Status of rds-proxy changes to Available Select rds-proxy, save the Proxy Endpoint value to prepare for the next step "
+},
+{
+	"uri": "/1-preparation/1.1-createvpc/",
+	"title": "Create VPC",
+	"tags": [],
+	"description": "",
+	"content": "Execution sequence Access VPC Console Select Your VPC Select Create VPC At Create VPC page In the Resources field, select VPC and more In the Name tag field, enter FCJ In the Number of Availability Zones (AZs) field, select 2 In the Number of public subnets field, select 2 In the Number of private subnets field, select 2 Select Create VPC Wait until VPC and components are created Select View VPC Successfully create VPC At the VPC interface Select Subnets Select FCJ-subnet-public1-ap-southeast-1a Select Actions, then select Edit subnet settings At Edit subnet settings page In the Auto-assign IP settings field, check Enable auto-assign public IPv4 address Select Save "
+},
+{
+	"uri": "/7-hafailovers/7.1-testscript/",
+	"title": "Download Test Script",
+	"tags": [],
+	"description": "",
+	"content": "Execution sequence Return to the MobaXterm window\nInstall Pip package manager for python3 curl -sS https://bootstrap.pypa.io/get-pip.py | python3 Install psycopg2 library to connect to PostgreSQL pip install psycopg2-binary Download Failover Test Script wget https://ws-assets-prod-iad-r-iad-ed304a55c2ca1aee.s3.us-east-1.amazonaws.com/2a5fc82d-2b5f-4105-83c2-91a1b4d7abfe/simple_failover.py "
+},
+{
+	"uri": "/1-preparation/",
+	"title": "Prepare Resources",
+	"tags": [],
+	"description": "",
+	"content": "In this chapter, we will perform:\nCreate 1 VPC with 2 Public Subnets, 2 Public Subnets Create 1 Security Group for EC2 Instance, 1 Security Group for PostgreSQL and RDS Proxy Create 1 IAM Role for EC2 Instance Modify IAM Role for EC2 Instance Note: All resources in this workshop use Region Singapore (ap-southeast-1) Content 1.1 Create VPC\n1.2 Create Security Group\n1.3 Create IAM Role for EC2\n1.4 Create EC2 Instance\n1.5 Modify IAM Role for EC2\n1.6 Connect EC2 Instance\n"
+},
+{
+	"uri": "/",
+	"title": "RDS Proxy for PostgreSQL",
+	"tags": [],
+	"description": "",
+	"content": "RDS Proxy for PostgreSQL In this workshop, we will learn the steps to create an RDS Proxy and perform Tests to understand its functionality.\nArchitecture of the workshop Content 1. Prepare Resources\n2. Create RDS PostgreSQL\n3. Store a Secret\n4. Create IAM Role for RDS Proxy\n5. Create RDS Proxy\n6. Test Multiplexing\n7. Test Failover\n8. Clean Up Resources\n"
+},
+{
+	"uri": "/6-multiplexing/6.1-dbendpoint/",
+	"title": "Test with DB Endpoint",
+	"tags": [],
+	"description": "",
+	"content": "Execution sequence Return to the MobaXterm window\nCheck PostgreSQL\u0026rsquo;s max_connections. We see the result is 403 (This value will vary depending on the Instance Types of the DB) psql -h $DBENDP -d postgres -c \u0026#34;SHOW max_connections\u0026#34; Initialize pgbench at Database postgres pgbench -i -h $DBENDP -d postgres Implement pgbench process with DB Endpoint. Wait until the test is completed (300 seconds). In which: -c 600: Create 600 simultaneous connections to PostgreSQL, the number we choose will be larger than max_connections above 403 -T 300: Time we run the test, unit (s) Redirect all output to a file named temp-op1 pgbench -h $DBENDP -d postgres -c 600 -n --select-only -T 300 -C -P 1 \u0026gt; temp-op1 2\u0026gt;\u0026amp;1 Execute the commands below. FATAL messages indicate that the max_connections limit is being hit because pgbench is trying to make more connections than the limit.\nWe see a 204 failed connection. This proves that the maximum number of connections that PostgreSQL (600-204)=396 is approximately the value max_connections.\nBecause PostgreSQL itself retains some connections for itself. You can see more settings here runtime-config-connection grep \u0026#34;FATAL\u0026#34; temp-op1 | head. head\rgrep \u0026#34;FATAL\u0026#34; temp-op1 | wc -l Conclude:\nWhen connecting directly to a DB instance endpoint, the value max_connections is applied as a connection limit, and any clients will not be able to create new connections if that limit is reached.\n"
+},
+{
+	"uri": "/5-rdsproxy/5.2-connectproxy/",
+	"title": "Connect RDS Proxy",
+	"tags": [],
+	"description": "",
+	"content": "Execution sequence Return to the MobaXterm window Export Environment Variables. Change \u0026lt;CHANGE_YOUR_PROXY_ENDPOINT_HERE\u0026gt; with the Proxy Endpoint we saved in step 5.1 echo \u0026#34;export PRXENDP=\u0026lt;CHANGE_YOUR_PROXY_ENDPOINT_HERE\u0026gt;\u0026#34; \u0026gt;\u0026gt; /home/ec2-user/.bashrc\rsource ~/.bashrc Log in to RDS PostgreSQL with host as Proxy Endpoint\nSuccessfully logged in using Proxy Endpoint as shown below psql -h $PRXENDP -d postgres Exit RDS PostgreSQL exit "
+},
+{
+	"uri": "/4-roleforproxy/4.2-createrole/",
+	"title": "Create IAM Role",
+	"tags": [],
+	"description": "",
+	"content": "Execution sequence At IAM Console Select Roles Select Create role At Select trusted entity page Select Custom trust policy Copy and paste the Trust Policy below, then select Next {\r\u0026#34;Version\u0026#34;: \u0026#34;2012-10-17\u0026#34;,\r\u0026#34;Statement\u0026#34;: [\r{\r\u0026#34;Sid\u0026#34;: \u0026#34;\u0026#34;,\r\u0026#34;Effect\u0026#34;: \u0026#34;Allow\u0026#34;,\r\u0026#34;Principal\u0026#34;: {\r\u0026#34;Service\u0026#34;: \u0026#34;rds.amazonaws.com\u0026#34;\r},\r\u0026#34;Action\u0026#34;: \u0026#34;sts:AssumeRole\u0026#34;\r}\r]\r} At Add permissions page In the search box, enter FCJ-Proxy-Policy Check FCJ-Proxy-Policy Select Next At page Name, review, and create In the Role name field, enter FCJ-Proxy-Role Select Create Role "
+},
+{
+	"uri": "/2-rdspostgresql/",
+	"title": "Create RDS PostgreSQL",
+	"tags": [],
+	"description": "",
+	"content": "\nIn this chapter, we will learn about:\nHow to create 1 RDS PostgreSQL Cluster How to install PostgreSQL Client and use it to connect to RDS PostgreSQL Content 2.1 Tạo RDS PostgreSQL\n2.2 Cài đặt PostgreSQL Client\n"
+},
+{
+	"uri": "/1-preparation/1.2-createsg/",
+	"title": "Create Security Group",
+	"tags": [],
+	"description": "",
+	"content": "Execution sequence In the VPC interface Select Security groups Select Create security group Create Security for EC2 Instance In the Security group name field, enter EC2-Security-Group In the Description field, enter Security Group for FCJ-Instance In the VPC field, click the X to select FCJ-vpc In the Inbound rule field, select Add rule to add 1 Inbound Rule Type select SSH, Source select Anywhere (0.0.0.0/0) Scroll down to the bottom, select Create security group Create Security Group for RDS PostgreSQL and RDS Proxy In the Security group name field, enter DB-Security-Group In the Description field, enter Security Group for RDS PostgreSQL and RDS Proxy In the VPC field, click the X to select FCJ-vpc In the Inbound rule field, select Add rule to add 1 Inbound Rule Type select PostgreSQL, Source select EC2-Security-Group Scroll down to the bottom, select Create security group At the newly created DB-Security-Group interface, select Edit inbound rules At the interface Edit inbound rules Select Add rule to add 1 Inbound Rule Type selects PostgreSQL, Source selects DB-Security-Group (Refers to its own Security Group) Scroll down to the bottom, select Save rules Successfully create 2 Security Groups "
+},
+{
+	"uri": "/2-rdspostgresql/2.2-installclient/",
+	"title": "Install PostgreSQL Client",
+	"tags": [],
+	"description": "",
+	"content": "Execution sequence Return to the MobaXterm window Install PostgreSQL Client sudo amazon-linux-extras install -y postgresql14 Install postgresql-contrib. Contains pgbench which we will use for Testing in the following chapters sudo yum install -y postgresql-contrib Export Environment Variables. Change \u0026lt;CHANGE_YOUR_DB_ENDPOINT_HERE\u0026gt; with the RDS PostgreSQL Endpoint we saved in step 2.1 Purpose: login to RDS PostgreSQL without entering User and Password. In there: PGUSER: RDS PostgreSQL User PGPASSWORD: RDS PostgreSQL Password DBENDP: RDS PostgreSQL Endpoint (DB Endpoint) echo \u0026#34;export PGUSER=postgres\u0026#34; \u0026gt;\u0026gt; /home/ec2-user/.bashrc\recho \u0026#34;export PGPASSWORD=postgres\u0026#34; \u0026gt;\u0026gt; /home/ec2-user/.bashrc\recho \u0026#34;export DBENDP=\u0026lt;CHANGE_YOUR_POSTGRESQL_ENDPOINT_HERE\u0026gt;\u0026#34; \u0026gt;\u0026gt; /home/ec2-user/.bashrc\rsource ~/.bashrc Log in to RDS PostgreSQL with host as DB Endpoint\nSuccessfully logged in using DB Endpoint as shown below psql -h $DBENDP -d postgres Print out information including current user, database name SELECT current_user, current_database(); Exit RDS PostgreSQL exit "
+},
+{
+	"uri": "/7-hafailovers/7.2-dbendpoint/",
+	"title": "Test with DB Endpoint",
+	"tags": [],
+	"description": "",
+	"content": "Execution sequence Return to the MobaXterm window. Duplicate adds 1 Terminal window\nAt the Terminal 1 window. Run Failover Test Script with DB Endpoint python3 simple_failover.py -e $DBENDP -u $PGUSER -p $PGPASSWORD -d postgres At the Terminal 2 window. Proceed to reboot postgresql DB to test the Failover feature aws rds reboot-db-instance --db-instance-identifier postgresql --region ap-southeast-1 --force-failover --query \u0026#39;DBInstance.DBInstanceStatus\u0026#39; After a while, we see many exceptions occurring due to postgresql failover "
+},
+{
+	"uri": "/6-multiplexing/6.2-proxyendpoint/",
+	"title": "Test with Proxy Endpoint",
+	"tags": [],
+	"description": "",
+	"content": "Test with Proxy Endpoint Return to the MobaXterm window\nExecute pgbench process with Proxy Endpoint. Wait until the test is completed (900 seconds). In which: -c 3000: Create 3000 simultaneous connections to PostgreSQL, the number we choose will be much larger than max_connections -T 900: Time we run the test, unit (s). Long enough for Cloudwatch to fully record events. Redirect all output to a file named temp-op2 pgbench -h $PRXENDP -d postgres -c 3000 -n --select-only -T 900 -C -P 1 \u0026gt; temp-op2 2\u0026gt;\u0026amp;1 Monitor with CloudWatch Metrics Access CloudWatch Service Administration Interface Select All metrics Select RDS Select EndpointName, ProxyName At page EndpointName, ProxyName\nSelect Metric name: ClientConnections, ProxyName: rds-proxy Select RDS, then select ProxyName, TargetGroup, TargetRole\nAt page ProxyName, TargetGroup, TargetRole Select Metric name: MaxDatabaseConnectionsAllowed, ProxyName: rds-proxy Select Metric name: DatabaseConnections, ProxyName: rds-proxy Select Graphed metrics In the Statistics section, select Sum In Custom section, select 15m Format the chart to make it easier to see Change Label Name Drag Down Choose the highest score ClientConnections: 2992 approximately 3000 connections we defined when running the pgbench command above MaxDatabaseConnectionsAllowed: 396, maximum number of connections allowed by PostgreSQL DatabaseConnections: 9 Conclude:\nConnecting to PostgreSQL via RDS Proxy gives us very good results. With nearly 3000 on Clients side but through Proxy we only need 9 connections to PostgreSQL.\nThis way RDS Proxy can help scale the application and also prevent getting \u0026ldquo;Too many connections\u0026rdquo; error from DB.\n"
+},
+{
+	"uri": "/1-preparation/1.3-roleforec2/",
+	"title": "Create IAM Role for EC2",
+	"tags": [],
+	"description": "",
+	"content": "Execution sequence Access IAM Console Select Roles Select Create Role At Select trusted entity page\nIn the Trusted entity type field, select AWS service In the Service or use case field, select EC2 Scroll to the bottom, select Next At Add permissions page\nIn the Permissions policies field, select AdministratorAccess Scroll to the bottom, select Next At page Name, review, and create In the Role name field, enter Admin-Role Select Create Role "
+},
+{
+	"uri": "/3-secret/",
+	"title": "Store a Secret",
+	"tags": [],
+	"description": "",
+	"content": "\nIn this step, we will learn the steps to Store a Secret for RDS PostgreSQL in AWS Secrets Manager\nExecution sequence Access AWS Secrets Manager Console Select Store a new Secret At Choose secret type page In the Secret type section, select Credentials for Amazon RDS database In the Credentials section In the User name field, enter postgres In the Password field, enter postgres In the Encryption key section, leave the default aws/secretsmanager In the Database section, select postgresql Select Next At Configuration secret page In the Secret name field, enter secretPostgresqlUser Select Next Successfully storing Secrets for RDS PostgreSQL in AWS Secrets Manager "
+},
+{
+	"uri": "/7-hafailovers/7.3-proxyendpoint/",
+	"title": "Test with Proxy Endpoint",
+	"tags": [],
+	"description": "",
+	"content": "Execution sequence Access RDS Console\nEnsure that postgresql DB item Status has returned to Available status due to Failover Feature Testing in step 7.2 Return to the MobaXterm window\nAt the Terminal 1 window. Run Failover Test Script with Proxy Endpoint python3 simple_failover.py -e $PRXENDP -u $PGUSER -p $PGPASSWORD -d postgres At the Terminal 2 window. Proceed to reboot postgresql DB to test the Failover feature aws rds reboot-db-instance --db-instance-identifier postgresql --region ap-southeast-1 --force-failover --query \u0026#39;DBInstance.DBInstanceStatus\u0026#39; After a while, we notice fewer exceptions occurring during postgresql failover Conclude:\nWhen RDS Proxy is used, applications recover faster and receive fewer exceptions during failover, demonstrating that RDS Proxy helps applications become be more resilient to errors and make them less disruptive.\nCongratulations, you have completed the workshop. Clean up your resources to avoid additional costs.\n"
+},
+{
+	"uri": "/1-preparation/1.4-createec2/",
+	"title": "Create EC2 Instance",
+	"tags": [],
+	"description": "",
+	"content": "Execution sequence Access EC2 Console Select Key Pairs Select Create key pair At the Create key pair page In Name field, enter FCJ-keypair In the Key pair type field, select RSA In the Private key file format field, select .pem Then select Create key pair and save the file FCJ-keypair.pem on your computer to use for the SSH service in the next steps Successfully created FCJ-keypair Return to EC2 Console Select Instances Select Launch instances At Launch an Instance page In the Name field, enter FCJ-Instance In the Amazon Machine Image (AMI) field, select Amazon Linux 2 AMI In the Instance type field, select t2.micro In the Key pair (login) field, select the FCJ-keypair created in the previous step In the Network settings section, select Edit In the VPC field, select FCJ-vpc In the Subnet field, select FCJ-subnet-public1-ap-southeast-1a In the Auto-assign Public IP field, select Enable, if not Enable then you may have skipped Enable auto-assign public IPv4 address in step 1.1 In the Firewall (security groups) field, select Select existing security group, and select EC2-Security-Group Check the information again and select Launch instance Successfully created EC2 Instance "
+},
+{
+	"uri": "/4-roleforproxy/",
+	"title": "Create IAM Role for RDS Proxy",
+	"tags": [],
+	"description": "",
+	"content": "\nIn this chapter, we will create a Policy and a Role for the RDS Proxy to ensure the necessary permissions allow the Proxy to access the RDS PostgreSQL\nContent 4.1 Create Policy\n4.2 Create IAM Role\n"
+},
+{
+	"uri": "/5-rdsproxy/",
+	"title": "Create RDS Proxy",
+	"tags": [],
+	"description": "",
+	"content": "\nIn this chapter, we will learn the steps to create an RDS Proxy and connect to RDS PostgreSQL through this Proxy\nContent 5.1 Create RDS Proxy\n5.2 Connect RDS Proxy\n"
+},
+{
+	"uri": "/1-preparation/1.5-modifyrole/",
+	"title": "Modify IAM Role for EC2",
+	"tags": [],
+	"description": "",
+	"content": "Execution sequence At EC2 Console Select Instance, then select FCJ-Instance Select Actions, select Security, then select Modify IAM Role At Modify IAM Role page In the IAM Role field, select the Admin-Role created in step 1.3 Select Update IAM Role Successfully Modify IAM Role for FCJ-Instance Save the value Public IPv4 address to prepare for the next step\n"
+},
+{
+	"uri": "/1-preparation/1.6-connectec2/",
+	"title": "Connect EC2 Instance",
+	"tags": [],
+	"description": "",
+	"content": "Execution sequence We proceed to perform SSH into EC2 Instance FCJ-Instance.\nHere we use MobaXterm. You can see more details Connect Amazon Linux 2 using MobaXterm\nSelect Session Select SSH In the Remote host field, enter the Public IPv4 Address that was saved in the previous step Select Specify username, enter ec2-user Select Advange SSH Settings Select Use private key, then retrieve the path to the file FCJ-keypair.pem saved in step 1.4 Select OK Connected successfully as shown below\n"
+},
+{
+	"uri": "/6-multiplexing/",
+	"title": "Test Multiplexing",
+	"tags": [],
+	"description": "",
+	"content": "In this chapter, we will Test Multiplexing Capability of the Proxy\nContent 6.1 Test with DB Endpoint\n6.2 Test with Proxy Endpoint\n"
+},
+{
+	"uri": "/7-hafailovers/",
+	"title": "Test Failover",
+	"tags": [],
+	"description": "",
+	"content": "In this chapter, we will perform a Test to check the effect of Proxy on the Failover Process.\nContent 7.1 Download Test Script\n7.2 Test with DB Endpoint\n7.3 Test with Proxy Endpoint\n"
+},
+{
+	"uri": "/8-cleanup/",
+	"title": "Clean Up Resources",
+	"tags": [],
+	"description": "",
+	"content": "We\u0026rsquo;ll go through the following steps to delete the resources we created in this workshop.\nDelete RDS Proxy Access RDS Console\nSelect Proxies, select rds-proxy Select Actions, then select Delete Make confirmation (if any) to proceed with Delete Delete RDS PostgreSQL Select Databases, select postgresql Select Actions, then select Delete Uncheck Create final snapshot, check I acknowledge\u0026hellip; Enter delete me, then select Delete to proceed with Delete Delete Secret Access AWS Secrets Manager Console\nSelect Secret, select secretPostgresqlUser Select Actions, then select Delete secret Enter 7 days, then select Schedule deletion to proceed with Delete Delete IAM Role Access IAM Console\nSelect Roles, select Admin-Role, FCJ-Proxy-Role, then select Delete Make confirmation (if any) to proceed with Delete Delete Policy Select Policies, search and select FCJ-Proxy-Policy, then select Delete Make confirmation (if any) to proceed with Delete Delete EC2 Instances Access EC2 Console\nSelect Instances, select FCJ-Instance Select Instance state, select Terminate instance Make confirmation (if any) to proceed with Terminate Delete Key pairs Select Key Pairs, select FCJ-keypair Select Actions, then select Delete Make confirmation (if any) to proceed with Delete Delete Security-Group (After deleting RDS PostgreSQL) Access VPC Console\nSelect Security Groups, select DB-Security-Group Select Actions, then select Delete security groups Make confirmation (if any) to proceed with Delete Select EC2-Security-Group Select Actions, then select Delete security groups Make confirmation (if any) to proceed with Delete Delete VPC Select Your VPCs, select FCJ-vpc Select Actions, then select Delete VPC Make confirmation (if any) to proceed with Delete "
+},
+{
+	"uri": "/categories/",
+	"title": "Categories",
+	"tags": [],
+	"description": "",
+	"content": ""
+},
+{
+	"uri": "/tags/",
+	"title": "Tags",
+	"tags": [],
+	"description": "",
+	"content": ""
+}]
